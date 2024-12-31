@@ -1,11 +1,46 @@
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 from .models import Usuario, Professor, Disciplina, Avaliacao, Comentario
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        try:
+            user = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError('Invalid email or password')
+        if not user.check_password(password):
+            raise serializers.ValidationError("Invalid email or password")
+
+        data['user'] = user
+        return data
+
+    def create(self, validated_data):
+        user = validated_data.get('user')
+        refresh = RefreshToken.for_user(user)
+        return {
+            'access_token': str(refresh.access_token),
+            'id': user.id
+        }
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = '__all__'
+
+    def create(self, validated_data):
+        password = validated_data.pop('senha')
+        usuario = Usuario(**validated_data)
+        usuario.set_password(password)
+        usuario.save()
+        return usuario
 
 
 class DisciplinaSerializer(serializers.ModelSerializer):

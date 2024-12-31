@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.hashers import make_password, check_password
 # Create your models here.
 
 
@@ -13,6 +13,12 @@ class Usuario(models.Model):
     fotoPerfil = models.ImageField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def set_password(self, raw_password):
+        self.senha = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.senha)
 
 
 class Professor(models.Model):
