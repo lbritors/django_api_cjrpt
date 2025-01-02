@@ -65,7 +65,6 @@ class ProfessorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 class AvaliacaoSerializer(serializers.ModelSerializer):
     usuario = UsuarioSerializer(read_only=True)
     professor = ProfessorSerializer(read_only=True)
