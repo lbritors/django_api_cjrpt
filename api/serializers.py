@@ -11,13 +11,9 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         email = data.get('email')
         password = data.get('password')
-        try:
-            user = Usuario.objects.get(email=email)
-        except Usuario.DoesNotExist:
+        user = authenticate(email=email, password=password)
+        if user is None:
             raise serializers.ValidationError('Invalid email or password')
-        if not user.check_password(password):
-            raise serializers.ValidationError("Invalid email or password")
-
         data['user'] = user
         return data
 
@@ -31,16 +27,28 @@ class LoginSerializer(serializers.Serializer):
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
+    senha = serializers.CharField(write_only=True)
+
     class Meta:
         model = Usuario
-        fields = '__all__'
+        fields = ['id', 'nome', 'email', 'departamento', 'curso', 'fotoPerfil', 'is_active', 'is_staff', 'senha']
+        extra_kwargs = {
+            'senha': {'write_only': True},
+        }
 
     def create(self, validated_data):
-        password = validated_data.pop('senha')
+        senha = validated_data.pop('senha')
+        validated_data['password'] = senha
         usuario = Usuario(**validated_data)
-        usuario.set_password(password)
+        usuario.set_password(senha)
         usuario.save()
         return usuario
+
+    def update(self, instance, validated_data):
+        if 'senha' in validated_data:
+            password = validated_data.pop('senha')
+            instance.set_password(password)
+        return super().update(instance, validated_data)
 
 
 class DisciplinaSerializer(serializers.ModelSerializer):

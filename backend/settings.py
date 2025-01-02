@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'api.Usuario'  # Substitua 'api' pelo nome da sua aplicação
 
 # Application definition
 
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 
 ]
 
