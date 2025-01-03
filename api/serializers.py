@@ -58,11 +58,27 @@ class DisciplinaSerializer(serializers.ModelSerializer):
 
 
 class ProfessorSerializer(serializers.ModelSerializer):
-    disciplina = DisciplinaSerializer(many=True, read_only=True)
+    disciplina_id = serializers.PrimaryKeyRelatedField(
+        queryset=Disciplina.objects.all(),  # Verifica se a disciplina existe
+        write_only=True
+    )
+    disciplinas = DisciplinaSerializer(many=True, read_only=True)
 
     class Meta:
         model = Professor
-        fields = '__all__'
+        fields = ['id', 'nome', 'departamento', 'disciplina_id', 'disciplinas']
+
+    def create(self, validated_data):
+        disciplinas_data = validated_data.pop('disciplina_id')
+        professor = Professor.objects.create(**validated_data)
+        professor.disciplinas.set([disciplinas_data])
+        return professor
+
+    def update(self, instance, validated_data):
+        disciplina = validated_data.pop('disciplina_id', None)
+        if disciplina:
+            instance.disciplinas.set([disciplina])
+        return super().update(instance, validated_data)
 
 
 class AvaliacaoSerializer(serializers.ModelSerializer):

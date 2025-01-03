@@ -3,8 +3,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
-from .models import Usuario, Disciplina
-from .serializers import UsuarioSerializer, LoginSerializer, DisciplinaSerializer
+from .models import Usuario, Disciplina, Professor
+from .serializers import UsuarioSerializer, LoginSerializer, DisciplinaSerializer, ProfessorSerializer
 from rest_framework.exceptions import PermissionDenied
 
 
@@ -64,3 +64,15 @@ class DisciplinaViewSet(viewsets.ModelViewSet):
 
         return [permission() for permission in permission_classes]
 
+
+class ProfessorViewSet(viewsets.ModelViewSet):
+    queryset = Professor.objects.all()
+    serializer_class = ProfessorSerializer
+
+    def get_permissions(self):
+        if self.action in ['retrieve', 'list']:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
